@@ -15,9 +15,8 @@
         #lesson-plan-section, #sow-section { max-width: 1200px; display: none; } 
 
         .school-header { text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
-        .school-header img { width: 60px; margin-bottom: 5px; }
-        .school-header h1 { font-size: 22px; margin: 5px 0; color: #000; }
-        .school-header h2 { font-size: 18px; margin: 5px 0; color: #000; }
+        .school-header h1 { font-size: 26px; margin: 5px 0; color: #1e4a79; }
+        .school-header h2 { font-size: 18px; margin: 5px 0; color: #555; }
 
         .sow-controls-container { display: flex; justify-content: center; gap: 15px; margin: 10px auto 20px auto; max-width: 650px; }
         .sow-controls-container select { flex: 1; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; color: #333; background-color: #f8f9fa; }
@@ -161,7 +160,7 @@
     </div>
 
     <script>
-        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbybmaVv7dnm1hDUj8EvdudTVNO9X6E2yOYO24JVkbNdh5cIyJJ5jhVMQD3exLomNUHG/exec';
+        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbzmo3Yc8zM4IrA0DX5-LxB8FhYXuoIrUL_I5APRT2m-xeo9xmmjP4JD7FNvMUt-9hY1Yg/exec';
         let globalOutcomes = []; 
 
         const lpYearDropdown = document.getElementById('lp-year');
@@ -359,7 +358,6 @@
             const year = document.getElementById('lp-year').value; const subjectSelect = document.getElementById('lp-subject');
             const subjectText = subjectSelect.options[subjectSelect.selectedIndex].text; const grade = document.getElementById('lp-grade').value;
             
-            // Get the selected format
             const exportFormat = document.getElementById('export-lp-format').value;
             const formatLabel = exportFormat === 'word' ? 'Word Document' : 'PDF';
 
@@ -397,7 +395,6 @@
 
             btn.disabled = true; btn.innerText = `Generating Lesson Plan ${formatLabel}... Please wait`; statusDiv.innerHTML = "";
 
-            // Pass the format in the payload to Google Apps Script
             const payload = { action: 'generateLP', year: year, subject: subjectText, grade: grade, lpData: lpData, format: exportFormat };
 
             fetch(googleAppScriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
