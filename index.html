@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Plan Portal</title>
     <style>
-        /* Base Styles & Box Sizing for proper scaling */
+        /* Base Styles & Box Sizing */
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
@@ -41,12 +41,19 @@
         .term-col { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 10px; min-width: 0; box-shadow: inset 0 0 5px rgba(0,0,0,0.02); }
         .term-col h3, .outcomes-container h3 { text-align: center; font-size: 18px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; color: #1e4a79; }
         
-        /* Week Rows */
+        /* Week & Period Rows */
         .week-group { border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
-        .week-row { display: flex; align-items: center; margin-bottom: 8px; width: 100%; gap: 8px; }
+        
+        .period-container { background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; padding: 10px; width: 100%; box-sizing: border-box; }
+        .week-row { display: flex; align-items: center; width: 100%; gap: 8px; flex-wrap: wrap; }
         .week-row label { width: 35px; font-weight: bold; font-size: 14px; color: #333; margin: 0; flex-shrink: 0; }
-        .week-row select { flex: 1; padding: 8px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 6px; width: 100%; cursor: pointer; }
+        .week-row select { flex: 1; padding: 8px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 6px; min-width: 150px; cursor: pointer; }
         .week-row input[type="date"] { padding: 7px; font-size: 12px; border: 1px solid #ccc; border-radius: 6px; width: 110px; flex-shrink: 0; font-family: Arial, sans-serif; cursor: pointer; }
+
+        /* NEW: Indicators Checkbox Area */
+        .indicators-container { background: #f1f3f5; padding: 10px; border-radius: 6px; margin-top: 10px; direction: rtl; text-align: right; border-right: 3px solid #3498db; }
+        .indicator-label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #444; margin-bottom: 6px; cursor: pointer; line-height: 1.4; }
+        .indicator-label input[type="checkbox"] { margin-top: 3px; cursor: pointer; transform: scale(1.1); }
 
         /* Date Pickers */
         .date-picker-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; background-color: #e9ecef; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; }
@@ -87,40 +94,25 @@
         .generate-status { margin-top: 20px; font-weight: bold; color: #0056b3; font-size: 17px; }
         .loading-alert { text-align: center; font-size: 16px; padding: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; margin-bottom: 15px; }
 
-        /* =========================================================
-           POWERFUL MOBILE RESPONSIVE DESIGN (PHONES & TABLETS)
-           ========================================================= */
+        /* Mobile Responsive */
         @media (max-width: 950px) {
             body { flex-direction: column; overflow: auto; height: auto; }
-            
-            /* Turn Sidebar into a Top Nav Bar */
             .sidebar { width: 100%; flex-direction: row; padding: 10px; justify-content: center; position: sticky; top: 0; border-right: none; border-bottom: 3px solid #163657; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
             .sidebar-box { margin: 0 5px; flex: 1; padding: 12px 5px; font-size: 14px; border-radius: 6px; }
-            
             .content-area { padding: 10px; display: block; overflow: visible; }
             .portal-container { padding: 15px; border-radius: 8px; }
-            
             .sow-controls-container { flex-direction: column; gap: 10px; }
             .sow-controls-container select { width: 100%; }
-
-            /* Stack Columns Vertically */
             .sow-layout { flex-direction: column; gap: 20px; }
             .term-col, .outcomes-container { width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
             .outcomes-container { height: auto; max-height: none; }
-            
-            /* Make Rows Touch-Friendly */
-            .week-row { flex-wrap: wrap; background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 8px; gap: 10px; }
             .week-row label { width: 100%; text-align: center; font-size: 16px; color: #1e4a79; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-bottom: 5px; }
             .week-row input[type="date"] { flex: 1; min-width: 130px; font-size: 14px; padding: 10px; }
             .week-row select { flex: 2; min-width: 100%; font-size: 15px; padding: 10px; }
-            
-            /* Expand Buttons */
             .action-btn { width: 48px; height: 40px; flex-shrink: 0; font-size: 20px; }
             .week-row .add-btn { width: 100%; margin-top: 5px; background-color: #e9ecef; }
-            
             .date-picker-row { justify-content: space-between; padding: 10px; }
             .date-picker-row select.lp-time-duration { font-size: 14px; padding: 8px; flex: 1; }
-
             .export-controls { flex-direction: column; width: 100%; align-items: stretch; gap: 10px; }
             .export-controls label { text-align: center; margin-bottom: -5px; }
             .generate-btn { font-size: 16px; padding: 18px 20px; max-width: 100%; }
@@ -252,8 +244,16 @@
             const t2Container = document.getElementById('sow-term2-weeks');
             let t1Html = ''; let t2Html = '';
             for (let i = 1; i <= 25; i++) {
-                t1Html += `<div class="week-group" id="sow-t1-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div></div>`;
-                t2Html += `<div class="week-group" id="sow-t2-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div></div>`;
+                t1Html += `<div class="week-group" id="sow-t1-w${i}">
+                    <div class="period-container">
+                        <div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div>
+                    </div>
+                </div>`;
+                t2Html += `<div class="week-group" id="sow-t2-w${i}">
+                    <div class="period-container">
+                        <div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div>
+                    </div>
+                </div>`;
             }
             t1Container.innerHTML = t1Html; t2Container.innerHTML = t2Html;
         }
@@ -269,11 +269,14 @@
                         <span class="date-to">Time:</span>
                         <select class="lp-time-duration" data-term="T1" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div> 
-                    <div class="week-row">
-                        <label>W${i}</label>
-                        <input type="date" class="period-date" title="Select Date for this Period">
-                        <select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
-                        <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'lp-t1-w${i}', 'lp')">+</button>
+                    <div class="period-container">
+                        <div class="week-row">
+                            <label>W${i}</label>
+                            <input type="date" class="period-date" title="Select Date for this Period">
+                            <select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this); updateIndicators('lp', this);"><option value="">-- Select --</option></select>
+                            <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'lp-t1-w${i}', 'lp')">+</button>
+                        </div>
+                        <div class="indicators-container" style="display:none;"></div>
                     </div>
                 </div>`;
                 t2Html += `
@@ -282,11 +285,14 @@
                         <span class="date-to">Time:</span>
                         <select class="lp-time-duration" data-term="T2" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div>
-                    <div class="week-row">
-                        <label>W${i}</label>
-                        <input type="date" class="period-date" title="Select Date for this Period">
-                        <select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
-                        <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'lp-t2-w${i}', 'lp')">+</button>
+                    <div class="period-container">
+                        <div class="week-row">
+                            <label>W${i}</label>
+                            <input type="date" class="period-date" title="Select Date for this Period">
+                            <select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this); updateIndicators('lp', this);"><option value="">-- Select --</option></select>
+                            <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'lp-t2-w${i}', 'lp')">+</button>
+                        </div>
+                        <div class="indicators-container" style="display:none;"></div>
                     </div>
                 </div>`;
             }
@@ -295,14 +301,24 @@
 
         function addDropdown(term, week, containerId, prefix) {
             const container = document.getElementById(containerId);
-            const row = document.createElement('div'); row.className = 'week-row';
+            
+            const wrapper = document.createElement('div'); 
+            wrapper.className = 'period-container';
             
             let dateInputHtml = prefix === 'lp' ? `<input type="date" class="period-date" title="Select Date for this Period">` : ``;
+            let indicatorsHtml = prefix === 'lp' ? `<div class="indicators-container" style="display:none;"></div>` : ``;
 
-            row.innerHTML = `<label></label>${dateInputHtml}<select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this)"><option value="">-- Select --</option></select><button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>`;
-            container.appendChild(row);
+            wrapper.innerHTML = `
+                <div class="week-row">
+                    <label></label>${dateInputHtml}
+                    <select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this); updateIndicators('${prefix}', this);"><option value="">-- Select --</option></select>
+                    <button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>
+                </div>
+                ${indicatorsHtml}
+            `;
+            container.appendChild(wrapper);
             
-            const select = row.querySelector('select');
+            const select = wrapper.querySelector('select');
             if (globalOutcomes.length > 0) {
                 globalOutcomes.forEach((outcome, index) => {
                     let option = document.createElement('option'); option.value = index; 
@@ -311,7 +327,43 @@
                 });
             }
         }
-        function removeDropdown(btn, prefix) { btn.parentElement.remove(); updateTags(prefix); }
+
+        // Modified to remove the entire period container wrapper
+        function removeDropdown(btn, prefix) { btn.closest('.period-container').remove(); updateTags(prefix); }
+
+        // NEW: Show checkboxes for indicators when an outcome is selected
+        function updateIndicators(prefix, selectElement) {
+            if (prefix !== 'lp') return; // Only needed for Lesson Plan section
+            
+            const container = selectElement.closest('.period-container').querySelector('.indicators-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+            
+            if (selectElement.value === "") {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const index = selectElement.value;
+            const indicators = globalOutcomes[index].indicators;
+            
+            if (indicators && indicators.length > 0) {
+                container.style.display = 'block';
+                let html = '<div style="font-size:12px; font-weight:bold; margin-bottom:8px; color:#1e4a79;">އިންޑިކޭޓަރސް (Select Indicators):</div>';
+                
+                indicators.forEach((ind, i) => {
+                    html += `
+                    <label class="indicator-label">
+                        <input type="checkbox" class="indicator-checkbox" value="${i}" checked>
+                        <span>${ind}</span>
+                    </label>`;
+                });
+                container.innerHTML = html;
+            } else {
+                container.style.display = 'none';
+            }
+        }
 
         function syncSelectors(source) {
             const dest = source === 'sow' ? 'lp' : 'sow';
@@ -359,7 +411,7 @@
             globalOutcomes.forEach((outcomeObj, index) => {
                 let numBox = document.createElement('div'); numBox.className = 'number-item'; numBox.id = `${prefix}-num-item-${index}`;
                 numBox.onmouseover = function() { showPreview(prefix, index); };
-                numBox.onclick = function() { showPreview(prefix, index); }; /* Added touch support */
+                numBox.onclick = function() { showPreview(prefix, index); }; 
                 numBox.innerHTML = `<span>${index + 1}</span><div class="tag-container" id="${prefix}-tag-container-${index}"></div>`;
                 gridElement.appendChild(numBox);
 
@@ -375,8 +427,6 @@
             document.getElementById('box-sow').classList.remove('active'); document.getElementById('box-lp').classList.remove('active'); document.getElementById(`box-${tab}`).classList.add('active');
             document.getElementById('lesson-plan-section').style.display = 'none'; document.getElementById('sow-section').style.display = 'none';
             if (tab === 'lp') { document.getElementById('lesson-plan-section').style.display = 'block'; } else if (tab === 'sow') { document.getElementById('sow-section').style.display = 'block'; }
-            
-            // Scroll to top on mobile tab switch
             if(window.innerWidth <= 950) { window.scrollTo(0, 0); }
         }
 
@@ -442,16 +492,28 @@
             const targetGroup = document.getElementById(groupId);
 
             if (targetGroup) {
-                targetGroup.querySelectorAll('.week-row').forEach(row => {
-                    const dropdown = row.querySelector('.outcome-dropdown');
+                targetGroup.querySelectorAll('.period-container').forEach(wrapper => {
+                    const dropdown = wrapper.querySelector('.outcome-dropdown');
                     if (dropdown && dropdown.value !== "") {
-                        const index = dropdown.value; const fullObj = globalOutcomes[index]; 
+                        const index = dropdown.value; 
+                        const fullObj = globalOutcomes[index]; 
                         
-                        const dateInput = row.querySelector('.period-date');
+                        const dateInput = wrapper.querySelector('.period-date');
                         const dateRaw = dateInput ? dateInput.value : "";
                         
                         const timeSelect = targetGroup.querySelector('.lp-time-duration');
                         const timeValue = timeSelect ? timeSelect.options[timeSelect.selectedIndex].value : ""; 
+
+                        // Extract ONLY the checked indicators
+                        let selectedIndicators = [];
+                        const checkboxes = wrapper.querySelectorAll('.indicator-checkbox');
+                        if (checkboxes.length > 0) {
+                            checkboxes.forEach(cb => {
+                                if (cb.checked) {
+                                    selectedIndicators.push(fullObj.indicators[cb.value]);
+                                }
+                            });
+                        }
 
                         if (!lpData[exportTerm][exportWeek]) { lpData[exportTerm][exportWeek] = []; }
                         
@@ -461,7 +523,7 @@
                             outcome: fullObj.text,
                             strand: fullObj.strand,
                             substrand: fullObj.substrand,
-                            indicators: fullObj.indicators
+                            indicators: selectedIndicators // Only sending the checked ones!
                         });
                         hasData = true;
                     }
