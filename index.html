@@ -5,70 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Plan Portal</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 160px; background-color: #1e4a79; color: white; padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0; border-right: 2px solid #163657; }
-        .sidebar-box { padding: 12px 10px; margin: 10px; background-color: #2964a3; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .sidebar-box:hover, .sidebar-box.active { background-color: #4da3ff; }
-        .content-area { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; }
-        .portal-container { background: white; width: 100%; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
+        /* Base Styles & Box Sizing for proper scaling */
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        #lesson-plan-section, #sow-section { max-width: 1200px; display: none; } 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
 
-        .school-header { text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
-        .school-header h1 { font-size: 26px; margin: 5px 0; color: #1e4a79; }
-        .school-header h2 { font-size: 18px; margin: 5px 0; color: #555; }
-
-        .sow-controls-container { display: flex; justify-content: center; gap: 15px; margin: 10px auto 20px auto; max-width: 650px; }
-        .sow-controls-container select { flex: 1; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; color: #333; background-color: #f8f9fa; }
-
-        .sow-layout { display: flex; gap: 20px; width: 100%; justify-content: space-between; align-items: flex-start; }
-        .term-col { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; box-sizing: border-box; min-width: 0; }
-        .term-col h3, .outcomes-container h3 { text-align: center; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-top: 0; }
+        /* Sidebar Styling */
+        .sidebar { width: 180px; background-color: #1e4a79; color: white; padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0; border-right: 2px solid #163657; z-index: 1000; }
+        .sidebar-box { padding: 15px 10px; margin: 10px; background-color: #2964a3; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .sidebar-box:hover, .sidebar-box.active { background-color: #4da3ff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
         
-        .week-group { border-bottom: 1px dashed #ddd; padding-bottom: 8px; margin-bottom: 8px; }
-        .week-row { display: flex; align-items: center; margin-bottom: 4px; width: 100%; gap: 6px; }
-        .week-row label { width: 35px; font-weight: bold; font-size: 13px; color: #333; margin: 0; text-align: left; flex-shrink: 0; }
-        .week-row select { flex: 1; padding: 6px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
+        /* Main Content Area */
+        .content-area { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; width: 100%; }
+        .portal-container { background: white; width: 100%; max-width: 1300px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: 0 auto; }
         
-        /* NEW: Styles for the single period date picker */
-        .week-row input[type="date"] { padding: 5px; font-size: 11px; border: 1px solid #ccc; border-radius: 4px; width: 105px; flex-shrink: 0; font-family: Arial, sans-serif; }
+        #lesson-plan-section, #sow-section { display: none; width: 100%; } 
 
-        .date-picker-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 5px; background-color: #e9ecef; padding: 5px 8px; border-radius: 4px; margin-bottom: 8px; }
-        .date-picker-row .date-to { font-size: 11px; color: #555; font-weight: bold; margin: 0 2px; }
-        .date-picker-row select.lp-time-duration { padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; font-family: Arial, sans-serif; direction: rtl; }
+        /* Headers */
+        .school-header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
+        .school-header h1 { font-size: 28px; margin: 5px 0; color: #1e4a79; }
+        .school-header h2 { font-size: 18px; margin: 5px 0; color: #666; }
 
-        .action-btn { width: 28px; height: 28px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .add-btn { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
-        .add-btn:hover { background-color: #dde2e6; }
-        .remove-btn { background-color: #ffeaea; color: #dc3545; border: 1px solid #ffc2c2; font-size: 18px; }
+        /* Controls / Dropdowns */
+        .sow-controls-container { display: flex; justify-content: center; gap: 15px; margin: 15px auto; max-width: 700px; }
+        .sow-controls-container select { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold; color: #333; background-color: #f8f9fa; cursor: pointer; transition: 0.2s; }
+        .sow-controls-container select:hover { border-color: #1e4a79; }
+
+        /* Layout Grid */
+        .sow-layout { display: flex; gap: 25px; width: 100%; justify-content: space-between; align-items: flex-start; }
+        .term-col { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 10px; min-width: 0; box-shadow: inset 0 0 5px rgba(0,0,0,0.02); }
+        .term-col h3, .outcomes-container h3 { text-align: center; font-size: 18px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; color: #1e4a79; }
+        
+        /* Week Rows */
+        .week-group { border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
+        .week-row { display: flex; align-items: center; margin-bottom: 8px; width: 100%; gap: 8px; }
+        .week-row label { width: 35px; font-weight: bold; font-size: 14px; color: #333; margin: 0; flex-shrink: 0; }
+        .week-row select { flex: 1; padding: 8px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 6px; width: 100%; cursor: pointer; }
+        .week-row input[type="date"] { padding: 7px; font-size: 12px; border: 1px solid #ccc; border-radius: 6px; width: 110px; flex-shrink: 0; font-family: Arial, sans-serif; cursor: pointer; }
+
+        /* Date Pickers */
+        .date-picker-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; background-color: #e9ecef; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; }
+        .date-picker-row .date-to { font-size: 12px; color: #555; font-weight: bold; }
+        .date-picker-row select.lp-time-duration { padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: Arial, sans-serif; direction: rtl; cursor: pointer; }
+
+        /* Buttons */
+        .action-btn { width: 32px; height: 32px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
+        .add-btn { background-color: #e2e6ea; color: #495057; border: 1px solid #ced4da; }
+        .add-btn:hover { background-color: #d3d9df; color: #1e4a79; }
+        .remove-btn { background-color: #ffeaea; color: #dc3545; border: 1px solid #ffc2c2; }
         .remove-btn:hover { background-color: #ffd1d1; }
 
-        .outcomes-container { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; height: 85vh; display: flex; flex-direction: column; }
-        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 80px; max-height: 120px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
-        .preview-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .preview-content { font-size: 14px; line-height: 1.6; direction: rtl; text-align: right; color: #888; }
+        /* Outcomes Panel */
+        .outcomes-container { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 10px; height: 80vh; display: flex; flex-direction: column; box-shadow: inset 0 0 5px rgba(0,0,0,0.02); }
+        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 90px; max-height: 140px; overflow-y: auto; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.1); margin-bottom: 20px; flex-shrink: 0; }
+        .preview-title { font-size: 13px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .preview-content { font-size: 15px; line-height: 1.6; direction: rtl; text-align: right; color: #444; }
         
         .grid-scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
-        .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .number-item { background: #e9ecef; border: 1px solid #ced4da; padding: 8px 4px; border-radius: 6px; text-align: center; font-size: 16px; font-weight: bold; color: #333; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 45px; }
-        .number-item:hover { background-color: #d3d9df; }
-        .number-item.selected-t1 { background: #dc3545; color: white; border-color: #dc3545; }
-        .number-item.selected-t2 { background: #28a745; color: white; border-color: #28a745; }
-        .shortcut-tag { font-size: 10px; font-weight: normal; margin-top: 4px; display: block; }
+        .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .number-item { background: #fff; border: 1px solid #ced4da; padding: 10px 5px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; color: #333; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .number-item:hover { background-color: #e9ecef; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .number-item.selected-t1 { background: #dc3545; color: white; border-color: #c82333; }
+        .number-item.selected-t2 { background: #28a745; color: white; border-color: #218838; }
+        .shortcut-tag { font-size: 11px; font-weight: normal; margin-top: 5px; display: block; opacity: 0.9; }
 
-        .generate-wrapper { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; }
-        
-        .export-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; background: #e9ecef; padding: 10px; border-radius: 6px; display: inline-flex; }
-        .export-controls label { font-weight: bold; color: #333; }
-        .export-controls select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; font-weight: bold; direction: rtl; }
+        /* Exports */
+        .generate-wrapper { text-align: center; margin-top: 40px; padding-top: 25px; border-top: 2px solid #eee; }
+        .export-controls { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #e9ecef; padding: 15px; border-radius: 8px; display: inline-flex; }
+        .export-controls label { font-weight: bold; color: #444; }
+        .export-controls select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; font-weight: bold; direction: rtl; cursor: pointer; }
 
-        .generate-btn { padding: 15px 30px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer; max-width: 400px; width: 100%; transition: 0.3s; }
-        .generate-btn:hover { background-color: #218838; }
-        .generate-btn.sow-btn { background-color: #007bff; }
-        .generate-btn.sow-btn:hover { background-color: #0056b3; }
-        .generate-status { margin-top: 15px; font-weight: bold; color: #0056b3; font-size: 16px; }
-
+        .generate-btn { padding: 16px 32px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; max-width: 450px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); }
+        .generate-btn:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3); }
+        .generate-btn.sow-btn { background-color: #007bff; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); }
+        .generate-btn.sow-btn:hover { background-color: #0056b3; box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3); }
+        .generate-status { margin-top: 20px; font-weight: bold; color: #0056b3; font-size: 17px; }
         .loading-alert { text-align: center; font-size: 16px; padding: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; margin-bottom: 15px; }
+
+        /* =========================================================
+           POWERFUL MOBILE RESPONSIVE DESIGN (PHONES & TABLETS)
+           ========================================================= */
+        @media (max-width: 950px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            
+            /* Turn Sidebar into a Top Nav Bar */
+            .sidebar { width: 100%; flex-direction: row; padding: 10px; justify-content: center; position: sticky; top: 0; border-right: none; border-bottom: 3px solid #163657; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+            .sidebar-box { margin: 0 5px; flex: 1; padding: 12px 5px; font-size: 14px; border-radius: 6px; }
+            
+            .content-area { padding: 10px; display: block; overflow: visible; }
+            .portal-container { padding: 15px; border-radius: 8px; }
+            
+            .sow-controls-container { flex-direction: column; gap: 10px; }
+            .sow-controls-container select { width: 100%; }
+
+            /* Stack Columns Vertically */
+            .sow-layout { flex-direction: column; gap: 20px; }
+            .term-col, .outcomes-container { width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+            .outcomes-container { height: auto; max-height: none; }
+            
+            /* Make Rows Touch-Friendly */
+            .week-row { flex-wrap: wrap; background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 8px; gap: 10px; }
+            .week-row label { width: 100%; text-align: center; font-size: 16px; color: #1e4a79; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-bottom: 5px; }
+            .week-row input[type="date"] { flex: 1; min-width: 130px; font-size: 14px; padding: 10px; }
+            .week-row select { flex: 2; min-width: 100%; font-size: 15px; padding: 10px; }
+            
+            /* Expand Buttons */
+            .action-btn { width: 48px; height: 40px; flex-shrink: 0; font-size: 20px; }
+            .week-row .add-btn { width: 100%; margin-top: 5px; background-color: #e9ecef; }
+            
+            .date-picker-row { justify-content: space-between; padding: 10px; }
+            .date-picker-row select.lp-time-duration { font-size: 14px; padding: 8px; flex: 1; }
+
+            .export-controls { flex-direction: column; width: 100%; align-items: stretch; gap: 10px; }
+            .export-controls label { text-align: center; margin-bottom: -5px; }
+            .generate-btn { font-size: 16px; padding: 18px 20px; max-width: 100%; }
+            .numbers-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .numbers-grid { grid-template-columns: repeat(4, 1fr); }
+            .school-header h1 { font-size: 24px; }
+        }
     </style>
 </head>
 <body>
@@ -98,7 +160,8 @@
                 </div>
                 <h2>Scheme of Work Matrix</h2>
             </div>
-            <div class="sow-layout">   <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="sow-term1-weeks"></div></div>
+            <div class="sow-layout">   
+                <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="sow-term1-weeks"></div></div>
                 <div class="term-col"><h3 dir="rtl">ދެވަނަ ޓާރމް (Term 2)</h3><div id="sow-term2-weeks"></div></div>
                 <div class="outcomes-container"><h3 dir="rtl">Outcomes</h3>
                     <div class="preview-box"><div class="preview-title">Full Outcome Preview</div><div id="sow-preview-content" class="preview-content">Hover over a number or select a dropdown to read the full text here...</div></div>
@@ -176,7 +239,6 @@
             let opt = document.createElement('option'); opt.value = `W${i}`; opt.text = `Week ${i}`; exportLpWeek.appendChild(opt);
         }
 
-        // Newly modified Date formatter for a single specific date
         function formatSingleDate(rawDate) {
             if (!rawDate) return "";
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -201,11 +263,10 @@
             const t2Container = document.getElementById('lp-term2-weeks');
             let t1Html = ''; let t2Html = '';
             for (let i = 1; i <= 25; i++) {
-                // Notice the removal of dates from date-picker-row, and insertion of period-date in week-row
                 t1Html += `
                 <div class="week-group" id="lp-t1-w${i}">
                     <div class="date-picker-row" dir="ltr">
-                        <span class="date-to" style="margin-left: 5px;">Time:</span>
+                        <span class="date-to">Time:</span>
                         <select class="lp-time-duration" data-term="T1" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div> 
                     <div class="week-row">
@@ -218,7 +279,7 @@
                 t2Html += `
                 <div class="week-group" id="lp-t2-w${i}">
                     <div class="date-picker-row" dir="ltr">
-                        <span class="date-to" style="margin-left: 5px;">Time:</span>
+                        <span class="date-to">Time:</span>
                         <select class="lp-time-duration" data-term="T2" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div>
                     <div class="week-row">
@@ -236,7 +297,6 @@
             const container = document.getElementById(containerId);
             const row = document.createElement('div'); row.className = 'week-row';
             
-            // Add date input only if we are in the Lesson Plan section
             let dateInputHtml = prefix === 'lp' ? `<input type="date" class="period-date" title="Select Date for this Period">` : ``;
 
             row.innerHTML = `<label></label>${dateInputHtml}<select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this)"><option value="">-- Select --</option></select><button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>`;
@@ -299,6 +359,7 @@
             globalOutcomes.forEach((outcomeObj, index) => {
                 let numBox = document.createElement('div'); numBox.className = 'number-item'; numBox.id = `${prefix}-num-item-${index}`;
                 numBox.onmouseover = function() { showPreview(prefix, index); };
+                numBox.onclick = function() { showPreview(prefix, index); }; /* Added touch support */
                 numBox.innerHTML = `<span>${index + 1}</span><div class="tag-container" id="${prefix}-tag-container-${index}"></div>`;
                 gridElement.appendChild(numBox);
 
@@ -314,6 +375,9 @@
             document.getElementById('box-sow').classList.remove('active'); document.getElementById('box-lp').classList.remove('active'); document.getElementById(`box-${tab}`).classList.add('active');
             document.getElementById('lesson-plan-section').style.display = 'none'; document.getElementById('sow-section').style.display = 'none';
             if (tab === 'lp') { document.getElementById('lesson-plan-section').style.display = 'block'; } else if (tab === 'sow') { document.getElementById('sow-section').style.display = 'block'; }
+            
+            // Scroll to top on mobile tab switch
+            if(window.innerWidth <= 950) { window.scrollTo(0, 0); }
         }
 
         function showPreview(prefix, index) {
@@ -378,17 +442,14 @@
             const targetGroup = document.getElementById(groupId);
 
             if (targetGroup) {
-                // Loop through rows instead of dropdowns so we can get the specific date input for this row
                 targetGroup.querySelectorAll('.week-row').forEach(row => {
                     const dropdown = row.querySelector('.outcome-dropdown');
                     if (dropdown && dropdown.value !== "") {
                         const index = dropdown.value; const fullObj = globalOutcomes[index]; 
                         
-                        // Get the single specific date for this row
                         const dateInput = row.querySelector('.period-date');
                         const dateRaw = dateInput ? dateInput.value : "";
                         
-                        // Time is still shared from the top of the week box
                         const timeSelect = targetGroup.querySelector('.lp-time-duration');
                         const timeValue = timeSelect ? timeSelect.options[timeSelect.selectedIndex].value : ""; 
 
