@@ -43,9 +43,10 @@
         .remove-btn:hover { background-color: #ffd1d1; }
 
         .outcomes-container { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; height: 85vh; display: flex; flex-direction: column; }
-        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 80px; max-height: 120px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
+        /* Adjusted preview box for more text */
+        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 120px; max-height: 200px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
         .preview-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .preview-content { font-size: 14px; line-height: 1.6; direction: rtl; text-align: right; color: #888; }
+        .preview-content { font-size: 14px; line-height: 1.6; direction: rtl; text-align: right; color: #333; }
         
         .grid-scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
         .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -159,7 +160,8 @@
     </div>
 
     <script>
-        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbwIAYyLzgNgezRFBdONMJCbD3K9IHEypKF1apse64nXarrhc7edpzqNI3H_eO40XYy9Jw/exec';
+        // --- UPDATED URL ---
+        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbzNpeXHyNTuq88U-B7bto3YixBw7WMzyI1i602SSpnTUdHtlCL_tfiarhtPLCD16dFd/exec';
         let globalOutcomes = []; 
 
         const lpYearDropdown = document.getElementById('lp-year');
@@ -312,8 +314,24 @@
             if (tab === 'lp') { document.getElementById('lesson-plan-section').style.display = 'block'; } else if (tab === 'sow') { document.getElementById('sow-section').style.display = 'block'; }
         }
 
+        // --- UPDATED SHOW PREVIEW FUNCTION TO SHOW INDICATORS ---
         function showPreview(prefix, index) {
-            const previewBox = document.getElementById(`${prefix}-preview-content`); previewBox.style.color = '#000'; previewBox.innerText = `${parseInt(index) + 1} - ${globalOutcomes[index].text}`;
+            const previewBox = document.getElementById(`${prefix}-preview-content`); 
+            
+            let outcomeObj = globalOutcomes[index];
+            let htmlContent = `<strong>Outcome ${parseInt(index) + 1}:</strong><br>${outcomeObj.text}<br><br>`;
+            
+            if (outcomeObj.indicators && outcomeObj.indicators.length > 0) {
+                htmlContent += `<strong>Indicators:</strong><ul style="margin-top: 5px; padding-right: 20px; text-align: right; direction: rtl;">`;
+                outcomeObj.indicators.forEach(ind => {
+                    htmlContent += `<li>${ind}</li>`;
+                });
+                htmlContent += `</ul>`;
+            } else {
+                htmlContent += `<em>No indicators found for this outcome.</em>`;
+            }
+            
+            previewBox.innerHTML = htmlContent;
         }
 
         function updateTags(prefix, changedDropdown) {
