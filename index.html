@@ -43,10 +43,7 @@
         .remove-btn:hover { background-color: #ffd1d1; }
 
         .outcomes-container { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; height: 85vh; display: flex; flex-direction: column; }
-        /* Adjusted preview box for more text */
-        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 120px; max-height: 200px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
-        .preview-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .preview-content { font-size: 14px; line-height: 1.6; direction: rtl; text-align: right; color: #333; }
+        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 120px; max-height: 250px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
         
         .grid-scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
         .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -69,6 +66,11 @@
         .generate-status { margin-top: 15px; font-weight: bold; color: #0056b3; font-size: 16px; }
 
         .loading-alert { text-align: center; font-size: 16px; padding: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; margin-bottom: 15px; }
+        
+        /* New Checkbox Styling */
+        .indicator-label { display: block; margin-bottom: 6px; cursor: pointer; padding: 6px; border-radius: 4px; background: #f8f9fa; border: 1px solid #eee; transition: 0.2s; }
+        .indicator-label:hover { background: #e2e6ea; }
+        .indicator-label input[type="checkbox"] { margin-left: 10px; transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -101,7 +103,7 @@
             <div class="sow-layout">   <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="sow-term1-weeks"></div></div>
                 <div class="term-col"><h3 dir="rtl">ދެވަނަ ޓާރމް (Term 2)</h3><div id="sow-term2-weeks"></div></div>
                 <div class="outcomes-container"><h3 dir="rtl">Outcomes</h3>
-                    <div class="preview-box"><div class="preview-title">Full Outcome Preview</div><div id="sow-preview-content" class="preview-content">Hover over a number or select a dropdown to read the full text here...</div></div>
+                    <div class="preview-box"><div id="sow-preview-content" class="preview-content">Hover over a number or select a dropdown to read the full text here...</div></div>
                     <div id="sow-outcomes-loading" class="loading-alert" style="display: none;">Loading...</div>
                     <div class="grid-scroll-area"><div class="numbers-grid" id="sow-outcomes-grid"></div></div>
                 </div>
@@ -134,7 +136,7 @@
                 <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="lp-term1-weeks"></div></div>
                 <div class="term-col"><h3 dir="rtl">ދެވަނަ ޓާރމް (Term 2)</h3><div id="lp-term2-weeks"></div></div>
                 <div class="outcomes-container"><h3 dir="rtl">Outcomes</h3>
-                    <div class="preview-box"><div class="preview-title">Full Outcome Preview</div><div id="lp-preview-content" class="preview-content">Hover over a number or select a dropdown to read the full text here...</div></div>
+                    <div class="preview-box"><div id="lp-preview-content" class="preview-content">Hover over a number or click a dropdown to read the text and select indicators...</div></div>
                     <div id="lp-outcomes-loading" class="loading-alert" style="display: none;">Loading...</div>
                     <div class="grid-scroll-area"><div class="numbers-grid" id="lp-outcomes-grid"></div></div>
                 </div>
@@ -160,9 +162,9 @@
     </div>
 
     <script>
-        // --- UPDATED URL ---
         const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbzNpeXHyNTuq88U-B7bto3YixBw7WMzyI1i602SSpnTUdHtlCL_tfiarhtPLCD16dFd/exec';
         let globalOutcomes = []; 
+        let dropdownCounter = 0; // Ensures every dropdown has a unique ID
 
         const lpYearDropdown = document.getElementById('lp-year');
         const sowYearDropdown = document.getElementById('sow-year');
@@ -185,13 +187,19 @@
             return "";
         }
 
+        function getNewDropdownId() {
+            dropdownCounter++;
+            return 'dd_' + dropdownCounter;
+        }
+
         function generateSowWeekRows() {
             const t1Container = document.getElementById('sow-term1-weeks');
             const t2Container = document.getElementById('sow-term2-weeks');
             let t1Html = ''; let t2Html = '';
             for (let i = 1; i <= 25; i++) {
-                t1Html += `<div class="week-group" id="sow-t1-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div></div>`;
-                t2Html += `<div class="week-group" id="sow-t2-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div></div>`;
+                let id1 = getNewDropdownId(); let id2 = getNewDropdownId();
+                t1Html += `<div class="week-group" id="sow-t1-w${i}"><div class="week-row"><label>W${i}</label><select id="${id1}" class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)" onclick="focusDropdown('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div></div>`;
+                t2Html += `<div class="week-group" id="sow-t2-w${i}"><div class="week-row"><label>W${i}</label><select id="${id2}" class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)" onclick="focusDropdown('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div></div>`;
             }
             t1Container.innerHTML = t1Html; t2Container.innerHTML = t2Html;
         }
@@ -201,6 +209,7 @@
             const t2Container = document.getElementById('lp-term2-weeks');
             let t1Html = ''; let t2Html = '';
             for (let i = 1; i <= 25; i++) {
+                let id1 = getNewDropdownId(); let id2 = getNewDropdownId();
                 t1Html += `
                 <div class="week-group" id="lp-t1-w${i}">
                     <div class="date-picker-row" dir="ltr">
@@ -210,7 +219,7 @@
                     <div class="week-row">
                         <label>W${i}</label>
                         <input type="date" class="period-date" title="Select Date for this Period">
-                        <select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
+                        <select id="${id1}" class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this)" onclick="focusDropdown('lp', this)"><option value="">-- Select --</option></select>
                         <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'lp-t1-w${i}', 'lp')">+</button>
                     </div>
                 </div>`;
@@ -223,7 +232,7 @@
                     <div class="week-row">
                         <label>W${i}</label>
                         <input type="date" class="period-date" title="Select Date for this Period">
-                        <select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
+                        <select id="${id2}" class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this)" onclick="focusDropdown('lp', this)"><option value="">-- Select --</option></select>
                         <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'lp-t2-w${i}', 'lp')">+</button>
                     </div>
                 </div>`;
@@ -234,10 +243,10 @@
         function addDropdown(term, week, containerId, prefix) {
             const container = document.getElementById(containerId);
             const row = document.createElement('div'); row.className = 'week-row';
-            
+            let ddId = getNewDropdownId();
             let dateInputHtml = prefix === 'lp' ? `<input type="date" class="period-date" title="Select Date for this Period">` : ``;
 
-            row.innerHTML = `<label></label>${dateInputHtml}<select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this)"><option value="">-- Select --</option></select><button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>`;
+            row.innerHTML = `<label></label>${dateInputHtml}<select id="${ddId}" class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this)" onclick="focusDropdown('${prefix}', this)"><option value="">-- Select --</option></select><button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>`;
             container.appendChild(row);
             
             const select = row.querySelector('select');
@@ -249,7 +258,8 @@
                 });
             }
         }
-        function removeDropdown(btn, prefix) { btn.parentElement.remove(); updateTags(prefix); }
+
+        function removeDropdown(btn, prefix) { btn.parentElement.remove(); updateTags(prefix, null); }
 
         function syncSelectors(source) {
             const dest = source === 'sow' ? 'lp' : 'sow';
@@ -296,7 +306,8 @@
 
             globalOutcomes.forEach((outcomeObj, index) => {
                 let numBox = document.createElement('div'); numBox.className = 'number-item'; numBox.id = `${prefix}-num-item-${index}`;
-                numBox.onmouseover = function() { showPreview(prefix, index); };
+                // Hover triggers plain text preview without checkboxes
+                numBox.onmouseover = function() { showPreview(prefix, index, null); };
                 numBox.innerHTML = `<span>${index + 1}</span><div class="tag-container" id="${prefix}-tag-container-${index}"></div>`;
                 gridElement.appendChild(numBox);
 
@@ -314,28 +325,87 @@
             if (tab === 'lp') { document.getElementById('lesson-plan-section').style.display = 'block'; } else if (tab === 'sow') { document.getElementById('sow-section').style.display = 'block'; }
         }
 
-        // --- UPDATED SHOW PREVIEW FUNCTION TO SHOW INDICATORS ---
-        function showPreview(prefix, index) {
+        // --- NEW PREVIEW UI WITH CHECKBOXES ---
+        function focusDropdown(prefix, dropdown) {
+            if (dropdown.value !== "") {
+                showPreview(prefix, dropdown.value, dropdown);
+            }
+        }
+
+        function showPreview(prefix, index, sourceDropdown = null) {
             const previewBox = document.getElementById(`${prefix}-preview-content`); 
-            
             let outcomeObj = globalOutcomes[index];
-            let htmlContent = `<strong>Outcome ${parseInt(index) + 1}:</strong><br>${outcomeObj.text}<br><br>`;
+            
+            let htmlContent = `<strong style="direction:ltr; display:block; text-align:right; border-bottom:1px solid #eee; padding-bottom:5px;">Outcome ${parseInt(index) + 1}:</strong><div style="direction:rtl; text-align:right; margin-top:8px; margin-bottom:15px; color:#333;">${outcomeObj.text}</div>`;
             
             if (outcomeObj.indicators && outcomeObj.indicators.length > 0) {
-                htmlContent += `<strong>Indicators:</strong><ul style="margin-top: 5px; padding-right: 20px; text-align: right; direction: rtl;">`;
-                outcomeObj.indicators.forEach(ind => {
-                    htmlContent += `<li>${ind}</li>`;
-                });
-                htmlContent += `</ul>`;
+                htmlContent += `<strong style="direction:ltr; display:block; text-align:right; border-bottom:1px solid #eee; padding-bottom:5px;">Indicators:</strong><div style="margin-top: 8px; direction: rtl; text-align: right;">`;
+                
+                if (sourceDropdown) {
+                    // Check if this dropdown has saved indicator selections. If not, select all by default.
+                    if (!sourceDropdown.hasAttribute('data-inds')) {
+                        let allIndices = outcomeObj.indicators.map((_, i) => i).join(',');
+                        sourceDropdown.setAttribute('data-inds', allIndices);
+                    }
+                    
+                    let savedData = sourceDropdown.getAttribute('data-inds');
+                    let selectedInds = savedData === "" ? [] : savedData.split(',').map(Number);
+
+                    outcomeObj.indicators.forEach((ind, i) => {
+                        let isChecked = selectedInds.includes(i) ? 'checked' : '';
+                        htmlContent += `
+                            <label class="indicator-label">
+                                <input type="checkbox" value="${i}" onchange="updateIndicatorSelection('${sourceDropdown.id}', this)" ${isChecked}>
+                                ${ind}
+                            </label>
+                        `;
+                    });
+                    htmlContent += `</div>`;
+                    htmlContent += `<div style="font-size:11px; color:#888; direction:ltr; text-align:right; margin-top:10px;">* Uncheck the indicators you do not want printed for this specific period.</div>`;
+                } else {
+                    // Just hovering over the grid - read-only list
+                    htmlContent += `<ul style="margin-top: 0; padding-right: 20px; text-align: right; direction: rtl; color:#555;">`;
+                    outcomeObj.indicators.forEach(ind => {
+                        htmlContent += `<li style="margin-bottom:6px;">${ind}</li>`;
+                    });
+                    htmlContent += `</ul></div>`;
+                    htmlContent += `<div style="font-size:11px; color:#888; direction:ltr; text-align:right; margin-top:10px;">* Click on a dropdown to edit its specific indicators.</div>`;
+                }
             } else {
-                htmlContent += `<em>No indicators found for this outcome.</em>`;
+                htmlContent += `<em style="direction:rtl; text-align:right; display:block; color:#888;">No indicators found for this outcome.</em>`;
             }
             
             previewBox.innerHTML = htmlContent;
         }
 
+        function updateIndicatorSelection(dropdownId, checkbox) {
+            let dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            
+            let attr = dropdown.getAttribute('data-inds');
+            let currentInds = attr === "" ? [] : attr.split(',').map(Number);
+            let val = parseInt(checkbox.value);
+            
+            if (checkbox.checked) {
+                if (!currentInds.includes(val)) currentInds.push(val);
+            } else {
+                currentInds = currentInds.filter(i => i !== val);
+            }
+            
+            dropdown.setAttribute('data-inds', currentInds.join(','));
+        }
+
         function updateTags(prefix, changedDropdown) {
-            if (changedDropdown && changedDropdown.value !== "") { showPreview(prefix, changedDropdown.value); }
+            if (changedDropdown) {
+                // Changing the outcome completely resets the checkbox selections
+                changedDropdown.removeAttribute('data-inds'); 
+                if (changedDropdown.value !== "") { 
+                    showPreview(prefix, changedDropdown.value, changedDropdown); 
+                } else {
+                    document.getElementById(`${prefix}-preview-content`).innerHTML = 'Hover over a number or click a dropdown to read the text and select indicators...';
+                }
+            }
+            
             const sectionId = prefix === 'sow' ? 'sow-section' : 'lesson-plan-section';
             document.querySelectorAll(`#${sectionId} .number-item`).forEach(item => { item.classList.remove('selected-t1', 'selected-t2'); });
             document.querySelectorAll(`#${sectionId} .tag-container`).forEach(container => { container.innerHTML = ''; });
@@ -414,6 +484,16 @@
                         const timeSelect = targetGroup.querySelector('.lp-time-duration');
                         const timeValue = timeSelect ? timeSelect.options[timeSelect.selectedIndex].value : ""; 
 
+                        // --- NEW: Grab only the indicators that the user left checked ---
+                        let finalIndicators = [];
+                        if (dropdown.hasAttribute('data-inds')) {
+                            let savedData = dropdown.getAttribute('data-inds');
+                            let selectedIndices = savedData === "" ? [] : savedData.split(',').map(Number);
+                            finalIndicators = selectedIndices.map(i => fullObj.indicators[i]);
+                        } else {
+                            finalIndicators = fullObj.indicators; // Failsafe fallback
+                        }
+
                         if (!lpData[exportTerm][exportWeek]) { lpData[exportTerm][exportWeek] = []; }
                         
                         lpData[exportTerm][exportWeek].push({
@@ -422,7 +502,7 @@
                             outcome: fullObj.text,
                             strand: fullObj.strand,
                             substrand: fullObj.substrand,
-                            indicators: fullObj.indicators
+                            indicators: finalIndicators // Sends filtered list to Code.gs
                         });
                         hasData = true;
                     }
