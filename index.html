@@ -5,124 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Plan Portal</title>
     <style>
-        /* Base Styles & Box Sizing */
-        * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 160px; background-color: #1e4a79; color: white; padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0; border-right: 2px solid #163657; }
+        .sidebar-box { padding: 12px 10px; margin: 10px; background-color: #2964a3; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .sidebar-box:hover, .sidebar-box.active { background-color: #4da3ff; }
+        .content-area { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; }
+        .portal-container { background: white; width: 100%; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        #lesson-plan-section, #sow-section { max-width: 1200px; display: none; } 
 
-        /* Sidebar Styling */
-        .sidebar { width: 180px; background-color: #1e4a79; color: white; padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0; border-right: 2px solid #163657; z-index: 1000; }
-        .sidebar-box { padding: 15px 10px; margin: 10px; background-color: #2964a3; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .sidebar-box:hover, .sidebar-box.active { background-color: #4da3ff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .school-header { text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+        .school-header h1 { font-size: 26px; margin: 5px 0; color: #1e4a79; }
+        .school-header h2 { font-size: 18px; margin: 5px 0; color: #555; }
+
+        .sow-controls-container { display: flex; justify-content: center; gap: 15px; margin: 10px auto 20px auto; max-width: 650px; }
+        .sow-controls-container select { flex: 1; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; color: #333; background-color: #f8f9fa; }
+
+        .sow-layout { display: flex; gap: 20px; width: 100%; justify-content: space-between; align-items: flex-start; }
+        .term-col { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; box-sizing: border-box; min-width: 0; }
+        .term-col h3, .outcomes-container h3 { text-align: center; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-top: 0; }
         
-        /* Main Content Area */
-        .content-area { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; width: 100%; }
-        .portal-container { background: white; width: 100%; max-width: 1300px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: 0 auto; }
+        .week-group { border-bottom: 1px dashed #ddd; padding-bottom: 8px; margin-bottom: 8px; }
+        .week-row { display: flex; align-items: center; margin-bottom: 4px; width: 100%; gap: 6px; }
+        .week-row label { width: 35px; font-weight: bold; font-size: 13px; color: #333; margin: 0; text-align: left; flex-shrink: 0; }
+        .week-row select { flex: 1; padding: 6px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
         
-        #lesson-plan-section, #sow-section { display: none; width: 100%; } 
+        .week-row input[type="date"] { padding: 5px; font-size: 11px; border: 1px solid #ccc; border-radius: 4px; width: 105px; flex-shrink: 0; font-family: Arial, sans-serif; }
 
-        /* Headers */
-        .school-header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
-        .school-header h1 { font-size: 28px; margin: 5px 0; color: #1e4a79; }
-        .school-header h2 { font-size: 18px; margin: 5px 0; color: #666; }
+        .date-picker-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 5px; background-color: #e9ecef; padding: 5px 8px; border-radius: 4px; margin-bottom: 8px; }
+        .date-picker-row .date-to { font-size: 11px; color: #555; font-weight: bold; margin: 0 2px; }
+        .date-picker-row select.lp-time-duration { padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; font-family: Arial, sans-serif; direction: rtl; }
 
-        /* Controls / Dropdowns */
-        .sow-controls-container { display: flex; justify-content: center; gap: 15px; margin: 15px auto; max-width: 700px; }
-        .sow-controls-container select { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold; color: #333; background-color: #f8f9fa; cursor: pointer; transition: 0.2s; }
-        .sow-controls-container select:hover { border-color: #1e4a79; }
-
-        /* Layout Grid */
-        .sow-layout { display: flex; gap: 25px; width: 100%; justify-content: space-between; align-items: flex-start; }
-        .term-col { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 10px; min-width: 0; box-shadow: inset 0 0 5px rgba(0,0,0,0.02); }
-        .term-col h3, .outcomes-container h3 { text-align: center; font-size: 18px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; color: #1e4a79; }
-        
-        /* Week & Period Rows */
-        .week-group { border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
-        
-        .period-container { background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; padding: 10px; width: 100%; box-sizing: border-box; }
-        .week-row { display: flex; align-items: center; width: 100%; gap: 8px; flex-wrap: wrap; }
-        .week-row label { width: 35px; font-weight: bold; font-size: 14px; color: #333; margin: 0; flex-shrink: 0; }
-        .week-row select { flex: 1; padding: 8px; font-size: 14px; direction: rtl; border: 1px solid #ccc; border-radius: 6px; min-width: 150px; cursor: pointer; }
-        .week-row input[type="date"] { padding: 7px; font-size: 12px; border: 1px solid #ccc; border-radius: 6px; width: 110px; flex-shrink: 0; font-family: Arial, sans-serif; cursor: pointer; }
-
-        /* NEW: Indicators Checkbox Area */
-        .indicators-container { background: #f1f3f5; padding: 10px; border-radius: 6px; margin-top: 10px; direction: rtl; text-align: right; border-right: 3px solid #3498db; }
-        .indicator-label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #444; margin-bottom: 6px; cursor: pointer; line-height: 1.4; }
-        .indicator-label input[type="checkbox"] { margin-top: 3px; cursor: pointer; transform: scale(1.1); }
-
-        /* Date Pickers */
-        .date-picker-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; background-color: #e9ecef; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; }
-        .date-picker-row .date-to { font-size: 12px; color: #555; font-weight: bold; }
-        .date-picker-row select.lp-time-duration { padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: Arial, sans-serif; direction: rtl; cursor: pointer; }
-
-        /* Buttons */
-        .action-btn { width: 32px; height: 32px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
-        .add-btn { background-color: #e2e6ea; color: #495057; border: 1px solid #ced4da; }
-        .add-btn:hover { background-color: #d3d9df; color: #1e4a79; }
-        .remove-btn { background-color: #ffeaea; color: #dc3545; border: 1px solid #ffc2c2; }
+        .action-btn { width: 28px; height: 28px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .add-btn { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
+        .add-btn:hover { background-color: #dde2e6; }
+        .remove-btn { background-color: #ffeaea; color: #dc3545; border: 1px solid #ffc2c2; font-size: 18px; }
         .remove-btn:hover { background-color: #ffd1d1; }
 
-        /* Outcomes Panel */
-        .outcomes-container { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 10px; height: 80vh; display: flex; flex-direction: column; box-shadow: inset 0 0 5px rgba(0,0,0,0.02); }
-        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 90px; max-height: 140px; overflow-y: auto; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.1); margin-bottom: 20px; flex-shrink: 0; }
-        .preview-title { font-size: 13px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .preview-content { font-size: 15px; line-height: 1.6; direction: rtl; text-align: right; color: #444; }
+        .outcomes-container { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; height: 85vh; display: flex; flex-direction: column; }
+        .preview-box { background-color: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; min-height: 80px; max-height: 120px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
+        .preview-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 8px; direction: ltr; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .preview-content { font-size: 14px; line-height: 1.6; direction: rtl; text-align: right; color: #888; }
         
         .grid-scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
-        .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .number-item { background: #fff; border: 1px solid #ced4da; padding: 10px 5px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; color: #333; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .number-item:hover { background-color: #e9ecef; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .number-item.selected-t1 { background: #dc3545; color: white; border-color: #c82333; }
-        .number-item.selected-t2 { background: #28a745; color: white; border-color: #218838; }
-        .shortcut-tag { font-size: 11px; font-weight: normal; margin-top: 5px; display: block; opacity: 0.9; }
+        .numbers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .number-item { background: #e9ecef; border: 1px solid #ced4da; padding: 8px 4px; border-radius: 6px; text-align: center; font-size: 16px; font-weight: bold; color: #333; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 45px; }
+        .number-item:hover { background-color: #d3d9df; }
+        .number-item.selected-t1 { background: #dc3545; color: white; border-color: #dc3545; }
+        .number-item.selected-t2 { background: #28a745; color: white; border-color: #28a745; }
+        .shortcut-tag { font-size: 10px; font-weight: normal; margin-top: 4px; display: block; }
 
-        /* Exports */
-        .generate-wrapper { text-align: center; margin-top: 40px; padding-top: 25px; border-top: 2px solid #eee; }
-        .export-controls { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #e9ecef; padding: 15px; border-radius: 8px; display: inline-flex; }
-        .export-controls label { font-weight: bold; color: #444; }
-        .export-controls select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; font-weight: bold; direction: rtl; cursor: pointer; }
+        .generate-wrapper { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; }
+        
+        .export-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; background: #e9ecef; padding: 10px; border-radius: 6px; display: inline-flex; }
+        .export-controls label { font-weight: bold; color: #333; }
+        .export-controls select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; font-weight: bold; direction: rtl; }
 
-        .generate-btn { padding: 16px 32px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; max-width: 450px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); }
-        .generate-btn:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3); }
-        .generate-btn.sow-btn { background-color: #007bff; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); }
-        .generate-btn.sow-btn:hover { background-color: #0056b3; box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3); }
-        .generate-status { margin-top: 20px; font-weight: bold; color: #0056b3; font-size: 17px; }
+        .generate-btn { padding: 15px 30px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer; max-width: 400px; width: 100%; transition: 0.3s; }
+        .generate-btn:hover { background-color: #218838; }
+        .generate-btn.sow-btn { background-color: #007bff; }
+        .generate-btn.sow-btn:hover { background-color: #0056b3; }
+        .generate-status { margin-top: 15px; font-weight: bold; color: #0056b3; font-size: 16px; }
+
         .loading-alert { text-align: center; font-size: 16px; padding: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; margin-bottom: 15px; }
-
-        /* Mobile Responsive */
-        @media (max-width: 950px) {
-            body { flex-direction: column; overflow: auto; height: auto; }
-            .sidebar { width: 100%; flex-direction: row; padding: 10px; justify-content: center; position: sticky; top: 0; border-right: none; border-bottom: 3px solid #163657; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-            .sidebar-box { margin: 0 5px; flex: 1; padding: 12px 5px; font-size: 14px; border-radius: 6px; }
-            .content-area { padding: 10px; display: block; overflow: visible; }
-            .portal-container { padding: 15px; border-radius: 8px; }
-            .sow-controls-container { flex-direction: column; gap: 10px; }
-            .sow-controls-container select { width: 100%; }
-            .sow-layout { flex-direction: column; gap: 20px; }
-            .term-col, .outcomes-container { width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-            .outcomes-container { height: auto; max-height: none; }
-            .week-row label { width: 100%; text-align: center; font-size: 16px; color: #1e4a79; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-bottom: 5px; }
-            .week-row input[type="date"] { flex: 1; min-width: 130px; font-size: 14px; padding: 10px; }
-            .week-row select { flex: 2; min-width: 100%; font-size: 15px; padding: 10px; }
-            .action-btn { width: 48px; height: 40px; flex-shrink: 0; font-size: 20px; }
-            .week-row .add-btn { width: 100%; margin-top: 5px; background-color: #e9ecef; }
-            .date-picker-row { justify-content: space-between; padding: 10px; }
-            .date-picker-row select.lp-time-duration { font-size: 14px; padding: 8px; flex: 1; }
-            .export-controls { flex-direction: column; width: 100%; align-items: stretch; gap: 10px; }
-            .export-controls label { text-align: center; margin-bottom: -5px; }
-            .generate-btn { font-size: 16px; padding: 18px 20px; max-width: 100%; }
-            .numbers-grid { grid-template-columns: repeat(5, 1fr); }
-        }
-
-        @media (max-width: 480px) {
-            .numbers-grid { grid-template-columns: repeat(4, 1fr); }
-            .school-header h1 { font-size: 24px; }
-        }
     </style>
 </head>
 <body>
@@ -152,8 +97,7 @@
                 </div>
                 <h2>Scheme of Work Matrix</h2>
             </div>
-            <div class="sow-layout">   
-                <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="sow-term1-weeks"></div></div>
+            <div class="sow-layout">   <div class="term-col"><h3 dir="rtl">ފުރަތަމަ ޓާރމް (Term 1)</h3><div id="sow-term1-weeks"></div></div>
                 <div class="term-col"><h3 dir="rtl">ދެވަނަ ޓާރމް (Term 2)</h3><div id="sow-term2-weeks"></div></div>
                 <div class="outcomes-container"><h3 dir="rtl">Outcomes</h3>
                     <div class="preview-box"><div class="preview-title">Full Outcome Preview</div><div id="sow-preview-content" class="preview-content">Hover over a number or select a dropdown to read the full text here...</div></div>
@@ -207,7 +151,7 @@
                     </select>
                 </div>
                 <br>
-                <button id="generateLpBtn" class="generate-btn" onclick="generateLessonPlan()">Generate Lesson Plan PDF</button>
+                <button id="generateLpBtn" class="generate-btn" onclick="generateLessonPlan()">Generate Lesson Plan</button>
                 <div id="lp-generate-status" class="generate-status"></div>
             </div>
         </div>
@@ -215,7 +159,7 @@
     </div>
 
     <script>
-        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbzmo3Yc8zM4IrA0DX5-LxB8FhYXuoIrUL_I5APRT2m-xeo9xmmjP4JD7FNvMUt-9hY1Yg/exec';
+        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbwIAYyLzgNgezRFBdONMJCbD3K9IHEypKF1apse64nXarrhc7edpzqNI3H_eO40XYy9Jw/exec';
         let globalOutcomes = []; 
 
         const lpYearDropdown = document.getElementById('lp-year');
@@ -244,16 +188,8 @@
             const t2Container = document.getElementById('sow-term2-weeks');
             let t1Html = ''; let t2Html = '';
             for (let i = 1; i <= 25; i++) {
-                t1Html += `<div class="week-group" id="sow-t1-w${i}">
-                    <div class="period-container">
-                        <div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div>
-                    </div>
-                </div>`;
-                t2Html += `<div class="week-group" id="sow-t2-w${i}">
-                    <div class="period-container">
-                        <div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div>
-                    </div>
-                </div>`;
+                t1Html += `<div class="week-group" id="sow-t1-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'sow-t1-w${i}', 'sow')">+</button></div></div>`;
+                t2Html += `<div class="week-group" id="sow-t2-w${i}"><div class="week-row"><label>W${i}</label><select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('sow', this)"><option value="">-- Select --</option></select><button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'sow-t2-w${i}', 'sow')">+</button></div></div>`;
             }
             t1Container.innerHTML = t1Html; t2Container.innerHTML = t2Html;
         }
@@ -266,33 +202,27 @@
                 t1Html += `
                 <div class="week-group" id="lp-t1-w${i}">
                     <div class="date-picker-row" dir="ltr">
-                        <span class="date-to">Time:</span>
+                        <span class="date-to" style="margin-left: 5px;">Time:</span>
                         <select class="lp-time-duration" data-term="T1" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div> 
-                    <div class="period-container">
-                        <div class="week-row">
-                            <label>W${i}</label>
-                            <input type="date" class="period-date" title="Select Date for this Period">
-                            <select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this); updateIndicators('lp', this);"><option value="">-- Select --</option></select>
-                            <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'lp-t1-w${i}', 'lp')">+</button>
-                        </div>
-                        <div class="indicators-container" style="display:none;"></div>
+                    <div class="week-row">
+                        <label>W${i}</label>
+                        <input type="date" class="period-date" title="Select Date for this Period">
+                        <select class="outcome-dropdown" data-term="T1" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
+                        <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T1', 'W${i}', 'lp-t1-w${i}', 'lp')">+</button>
                     </div>
                 </div>`;
                 t2Html += `
                 <div class="week-group" id="lp-t2-w${i}">
                     <div class="date-picker-row" dir="ltr">
-                        <span class="date-to">Time:</span>
+                        <span class="date-to" style="margin-left: 5px;">Time:</span>
                         <select class="lp-time-duration" data-term="T2" data-week="W${i}"><option value="30 މިނެޓް">30 މިނެޓް</option><option value="35 މިނެޓް" selected>35 މިނެޓް</option><option value="40 މިނެޓް">40 މިނެޓް</option><option value="45 މިނެޓް">45 މިނެޓް</option></select>
                     </div>
-                    <div class="period-container">
-                        <div class="week-row">
-                            <label>W${i}</label>
-                            <input type="date" class="period-date" title="Select Date for this Period">
-                            <select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this); updateIndicators('lp', this);"><option value="">-- Select --</option></select>
-                            <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'lp-t2-w${i}', 'lp')">+</button>
-                        </div>
-                        <div class="indicators-container" style="display:none;"></div>
+                    <div class="week-row">
+                        <label>W${i}</label>
+                        <input type="date" class="period-date" title="Select Date for this Period">
+                        <select class="outcome-dropdown" data-term="T2" data-week="W${i}" onchange="updateTags('lp', this)"><option value="">-- Select --</option></select>
+                        <button class="action-btn add-btn" title="Add another outcome" onclick="addDropdown('T2', 'W${i}', 'lp-t2-w${i}', 'lp')">+</button>
                     </div>
                 </div>`;
             }
@@ -301,24 +231,14 @@
 
         function addDropdown(term, week, containerId, prefix) {
             const container = document.getElementById(containerId);
-            
-            const wrapper = document.createElement('div'); 
-            wrapper.className = 'period-container';
+            const row = document.createElement('div'); row.className = 'week-row';
             
             let dateInputHtml = prefix === 'lp' ? `<input type="date" class="period-date" title="Select Date for this Period">` : ``;
-            let indicatorsHtml = prefix === 'lp' ? `<div class="indicators-container" style="display:none;"></div>` : ``;
 
-            wrapper.innerHTML = `
-                <div class="week-row">
-                    <label></label>${dateInputHtml}
-                    <select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this); updateIndicators('${prefix}', this);"><option value="">-- Select --</option></select>
-                    <button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>
-                </div>
-                ${indicatorsHtml}
-            `;
-            container.appendChild(wrapper);
+            row.innerHTML = `<label></label>${dateInputHtml}<select class="outcome-dropdown" data-term="${term}" data-week="${week}" onchange="updateTags('${prefix}', this)"><option value="">-- Select --</option></select><button class="action-btn remove-btn" title="Remove" onclick="removeDropdown(this, '${prefix}')">×</button>`;
+            container.appendChild(row);
             
-            const select = wrapper.querySelector('select');
+            const select = row.querySelector('select');
             if (globalOutcomes.length > 0) {
                 globalOutcomes.forEach((outcome, index) => {
                     let option = document.createElement('option'); option.value = index; 
@@ -327,43 +247,7 @@
                 });
             }
         }
-
-        // Modified to remove the entire period container wrapper
-        function removeDropdown(btn, prefix) { btn.closest('.period-container').remove(); updateTags(prefix); }
-
-        // NEW: Show checkboxes for indicators when an outcome is selected
-        function updateIndicators(prefix, selectElement) {
-            if (prefix !== 'lp') return; // Only needed for Lesson Plan section
-            
-            const container = selectElement.closest('.period-container').querySelector('.indicators-container');
-            if (!container) return;
-
-            container.innerHTML = '';
-            
-            if (selectElement.value === "") {
-                container.style.display = 'none';
-                return;
-            }
-            
-            const index = selectElement.value;
-            const indicators = globalOutcomes[index].indicators;
-            
-            if (indicators && indicators.length > 0) {
-                container.style.display = 'block';
-                let html = '<div style="font-size:12px; font-weight:bold; margin-bottom:8px; color:#1e4a79;">އިންޑިކޭޓަރސް (Select Indicators):</div>';
-                
-                indicators.forEach((ind, i) => {
-                    html += `
-                    <label class="indicator-label">
-                        <input type="checkbox" class="indicator-checkbox" value="${i}" checked>
-                        <span>${ind}</span>
-                    </label>`;
-                });
-                container.innerHTML = html;
-            } else {
-                container.style.display = 'none';
-            }
-        }
+        function removeDropdown(btn, prefix) { btn.parentElement.remove(); updateTags(prefix); }
 
         function syncSelectors(source) {
             const dest = source === 'sow' ? 'lp' : 'sow';
@@ -411,7 +295,6 @@
             globalOutcomes.forEach((outcomeObj, index) => {
                 let numBox = document.createElement('div'); numBox.className = 'number-item'; numBox.id = `${prefix}-num-item-${index}`;
                 numBox.onmouseover = function() { showPreview(prefix, index); };
-                numBox.onclick = function() { showPreview(prefix, index); }; 
                 numBox.innerHTML = `<span>${index + 1}</span><div class="tag-container" id="${prefix}-tag-container-${index}"></div>`;
                 gridElement.appendChild(numBox);
 
@@ -427,7 +310,6 @@
             document.getElementById('box-sow').classList.remove('active'); document.getElementById('box-lp').classList.remove('active'); document.getElementById(`box-${tab}`).classList.add('active');
             document.getElementById('lesson-plan-section').style.display = 'none'; document.getElementById('sow-section').style.display = 'none';
             if (tab === 'lp') { document.getElementById('lesson-plan-section').style.display = 'block'; } else if (tab === 'sow') { document.getElementById('sow-section').style.display = 'block'; }
-            if(window.innerWidth <= 950) { window.scrollTo(0, 0); }
         }
 
         function showPreview(prefix, index) {
@@ -452,9 +334,18 @@
             });
         }
 
+        function triggerDownload(base64Data, mimeType, fileName) {
+            const link = document.createElement('a');
+            link.href = `data:${mimeType};base64,${base64Data}`;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function generateSOW() {
             const btn = document.getElementById('generateSowBtn'); const statusDiv = document.getElementById('sow-generate-status');
-            btn.disabled = true; btn.innerText = "Generating Scheme of Work PDF... This may take up to 20 seconds"; statusDiv.innerHTML = "";
+            btn.disabled = true; btn.innerText = "Generating Scheme of Work... Please wait"; statusDiv.innerHTML = "";
             const year = document.getElementById('sow-year').value; const subjectSelect = document.getElementById('sow-subject');
             const subjectText = subjectSelect.options[subjectSelect.selectedIndex].text; const grade = document.getElementById('sow-grade').value;
             
@@ -467,9 +358,15 @@
                     sowData[term][week].push(fullText);
                 }
             });
+            
             fetch(googleAppScriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'generateSOW', year: year, subject: subjectText, grade: grade, sowData: sowData }) })
             .then(response => response.json()).then(data => {
-                if (data.success) { statusDiv.innerHTML = `Success! <br><br> <a href="${data.url}" target="_blank" style="color: #d9534f; font-size: 18px;">Click here to download your Scheme of Work PDF</a>`; } else { statusDiv.innerHTML = `<span style="color: red;">Error: ${data.error}</span>`; }
+                if (data.success) { 
+                    triggerDownload(data.base64, data.mimeType, data.fileName);
+                    statusDiv.innerHTML = `<span style="color: #28a745; font-size: 16px;">Success! Your file is downloading automatically.</span>`; 
+                } else { 
+                    statusDiv.innerHTML = `<span style="color: red;">Error: ${data.error}</span>`; 
+                }
                 btn.disabled = false; btn.innerText = "Generate Scheme of Work PDF";
             }).catch(error => {
                 statusDiv.innerHTML = `<span style="color: red;">Failed to connect to server.</span>`; btn.disabled = false; btn.innerText = "Generate Scheme of Work PDF";
@@ -481,9 +378,7 @@
             const exportTerm = document.getElementById('export-lp-term').value; const exportWeek = document.getElementById('export-lp-week').value;
             const year = document.getElementById('lp-year').value; const subjectSelect = document.getElementById('lp-subject');
             const subjectText = subjectSelect.options[subjectSelect.selectedIndex].text; const grade = document.getElementById('lp-grade').value;
-            
             const exportFormat = document.getElementById('export-lp-format').value;
-            const formatLabel = exportFormat === 'word' ? 'Word Document' : 'PDF';
 
             let lpData = { T1: {}, T2: {} };
             let hasData = false;
@@ -492,28 +387,14 @@
             const targetGroup = document.getElementById(groupId);
 
             if (targetGroup) {
-                targetGroup.querySelectorAll('.period-container').forEach(wrapper => {
-                    const dropdown = wrapper.querySelector('.outcome-dropdown');
+                targetGroup.querySelectorAll('.week-row').forEach(row => {
+                    const dropdown = row.querySelector('.outcome-dropdown');
                     if (dropdown && dropdown.value !== "") {
-                        const index = dropdown.value; 
-                        const fullObj = globalOutcomes[index]; 
-                        
-                        const dateInput = wrapper.querySelector('.period-date');
+                        const index = dropdown.value; const fullObj = globalOutcomes[index]; 
+                        const dateInput = row.querySelector('.period-date');
                         const dateRaw = dateInput ? dateInput.value : "";
-                        
                         const timeSelect = targetGroup.querySelector('.lp-time-duration');
                         const timeValue = timeSelect ? timeSelect.options[timeSelect.selectedIndex].value : ""; 
-
-                        // Extract ONLY the checked indicators
-                        let selectedIndicators = [];
-                        const checkboxes = wrapper.querySelectorAll('.indicator-checkbox');
-                        if (checkboxes.length > 0) {
-                            checkboxes.forEach(cb => {
-                                if (cb.checked) {
-                                    selectedIndicators.push(fullObj.indicators[cb.value]);
-                                }
-                            });
-                        }
 
                         if (!lpData[exportTerm][exportWeek]) { lpData[exportTerm][exportWeek] = []; }
                         
@@ -523,23 +404,24 @@
                             outcome: fullObj.text,
                             strand: fullObj.strand,
                             substrand: fullObj.substrand,
-                            indicators: selectedIndicators // Only sending the checked ones!
+                            indicators: fullObj.indicators
                         });
                         hasData = true;
                     }
                 });
             }
 
-            if (!hasData) { statusDiv.innerHTML = `<span style="color: red;">Error: No outcomes have been selected for ${exportTerm} ${exportWeek}. Please select at least one outcome.</span>`; return; }
+            if (!hasData) { statusDiv.innerHTML = `<span style="color: red;">Error: No outcomes selected for ${exportTerm} ${exportWeek}.</span>`; return; }
 
-            btn.disabled = true; btn.innerText = `Generating Lesson Plan ${formatLabel}... Please wait`; statusDiv.innerHTML = "";
+            btn.disabled = true; btn.innerText = `Generating Lesson Plan... Please wait`; statusDiv.innerHTML = "";
 
             const payload = { action: 'generateLP', year: year, subject: subjectText, grade: grade, lpData: lpData, format: exportFormat };
 
             fetch(googleAppScriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
             .then(response => response.json()).then(data => {
                 if (data.success) { 
-                    statusDiv.innerHTML = `Success! <br><br> <a href="${data.url}" target="_blank" style="color: #d9534f; font-size: 18px;">Click here to download your Lesson Plan ${formatLabel}</a>`; 
+                    triggerDownload(data.base64, data.mimeType, data.fileName);
+                    statusDiv.innerHTML = `<span style="color: #28a745; font-size: 16px;">Success! Your file is downloading automatically.</span>`; 
                 } else { 
                     statusDiv.innerHTML = `<span style="color: red;">Error: ${data.error}</span>`; 
                 }
